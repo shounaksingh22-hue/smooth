@@ -6,22 +6,20 @@ pub fn analyze() -> HardwareInfo {
     let mut sys = System::new_all();
     sys.refresh_all();
 
-    let hostname = System::host_name().unwrap_or_else(|| "Unknown".to_string());
-    
-    // Use platform overrides or sysinfo fallbacks
-    let os_name = System::name().unwrap_or_else(|| "Unknown OS".to_string());
-    let os_version = Platform::os_version();
-    let kernel_version = System::kernel_version().unwrap_or_else(|| "Unknown".to_string());
-    let model = Platform::hardware_model();
-
     let cpus = sys.cpus();
     let cpu_brand = if !cpus.is_empty() {
         cpus[0].brand().trim().to_string()
     } else {
         "Unknown CPU".to_string()
     };
+
+    let cpu_cores = sys.physical_core_count().unwrap_or(cpus.len());
+    let cpu_threads = cpus.len();
     
-    let cpu_arch = if cfg!(target_arch = "x86_64") {
+    // Get CPU frequency from first core in MHz
+    let cpu_frequency_mhz = cpus.first().map(|cpu| cpu.frequency()).unwrap_or(0);
+
+    let architecture = if cfg!(target_arch = "x86_64") {
         "x86_64".to_string()
     } else if cfg!(target_arch = "aarch64") {
         "aarch64".to_string()
@@ -29,22 +27,61 @@ pub fn analyze() -> HardwareInfo {
         "Unknown".to_string()
     };
 
-    let physical_cores = sys.physical_core_count().unwrap_or(cpus.len());
-    let logical_cores = cpus.len();
     let total_memory_bytes = sys.total_memory();
-    let total_memory_display = bytesize::ByteSize(total_memory_bytes).to_string();
+    let machine_model = Platform::hardware_model();
+
+    // Query GPU Name
+    let gpu_name = get_gpu_name();
+
+    // Determine disk type
+    let disk_type = if Platform::is_ssd() {
+        if cfg!(target_os = "macos") {
+            "NVMe".to_string()
+        } else {
+            "SSD".to_string()
+        }
+    } else {
+        "HDD".to_string()
+    };
 
     HardwareInfo {
-        hostname,
-        os_name,
-        os_version,
-        kernel_version,
-        model,
         cpu_brand,
-        cpu_arch,
-        physical_cores,
-        logical_cores,
+        cpu_cores,
+        cpu_threads,
+        cpu_frequency_mhz,
+        gpu_name,
         total_memory_bytes,
-        total_memory_display,
+        disk_type,
+        machine_model,
+        architecture,
+    }
+}
+
+fn get_gpu_name() -> String {
+    #[cfg(target_os = "macos")]
+    {
+        if let Ok(output) = std::process::Command::new("system_profiler")
+            .args(&["SPDisplaysDataType"])
+            .output()
+        {
+            let stdout_str = String::from_utf8_lossy(&output.stdout);
+            for line in stdout_str.lines() {
+                if line.contains("Chipset Model:") {
+                    if let Some(val) = line.split(':').nth(1) {
+                        return val.trim().to_string();
+                    }
+                }
+            }
+        }
+        "Apple GPU".to_string()
+    }
+    #[cfg(target_os = "windows")]
+    {
+        // Default on Windows if no direct command
+        "Intel/NVIDIA/AMD Graphics".to_string()
+    }
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    {
+        "Integrated Graphics".to_string()
     }
 }

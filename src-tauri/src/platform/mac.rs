@@ -114,7 +114,8 @@ pub fn startup_items() -> Vec<StartupItem> {
                             name,
                             path: path.to_string_lossy().to_string(),
                             enabled,
-                            source: "User LaunchAgent".to_string(),
+                            impact: "Medium".to_string(),
+                            category: "LaunchAgent".to_string(),
                         });
                     }
                 }
@@ -139,7 +140,8 @@ pub fn startup_items() -> Vec<StartupItem> {
                         name,
                         path: path.to_string_lossy().to_string(),
                         enabled,
-                        source: "System LaunchAgent".to_string(),
+                        impact: "Low".to_string(),
+                        category: "LaunchAgent".to_string(),
                     });
                 }
             }

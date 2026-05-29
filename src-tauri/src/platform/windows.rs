@@ -139,7 +139,8 @@ pub fn startup_items() -> Vec<StartupItem> {
                         name,
                         path,
                         enabled: true,
-                        source: source.to_string(),
+                        impact: "Medium".to_string(),
+                        category: "LoginItem".to_string(),
                     });
                 }
             }
@@ -166,7 +167,8 @@ pub fn startup_items() -> Vec<StartupItem> {
                         name,
                         path: path.to_string_lossy().to_string(),
                         enabled: true,
-                        source: "Startup Folder".to_string(),
+                        impact: "High".to_string(),
+                        category: "LoginItem".to_string(),
                     });
                 }
             }

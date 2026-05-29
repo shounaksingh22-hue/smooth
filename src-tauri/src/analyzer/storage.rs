@@ -1,4 +1,4 @@
-use crate::models::system::{StorageInfo, DiskInfo, CacheEntry};
+use crate::models::system::{StorageInfo, StorageBreakdown, CacheEntry};
 use crate::platform::Platform;
 use sysinfo::Disks;
 use std::path::{Path, PathBuf};
@@ -6,54 +6,91 @@ use walkdir::WalkDir;
 use bytesize::ByteSize;
 
 pub fn analyze() -> StorageInfo {
-    // 1. Scan Disks
     let disks_list = Disks::new_with_refreshed_list();
-    let mut disks = Vec::new();
-    let mut total_capacity_bytes = 0;
-    let mut total_available_bytes = 0;
-    let mut total_used_bytes = 0;
+    
+    // Find the primary system drive (mounted at "/" on Mac/Unix, or containing "C:" on Windows)
+    let system_disk = disks_list.iter().find(|disk| {
+        let mp = disk.mount_point().to_string_lossy().to_lowercase();
+        mp == "/" || mp == "c:\\" || mp.starts_with("c:")
+    }).or_else(|| disks_list.first()); // fallback to first disk
 
-    for disk in &disks_list {
+    let (total_bytes, available_bytes, used_bytes, mount_point, file_system) = if let Some(disk) = system_disk {
         let total = disk.total_space();
         let available = disk.available_space();
         let used = total.saturating_sub(available);
-        let usage_percent = if total > 0 {
-            (used as f64 / total as f64) * 100.0
-        } else {
-            0.0
-        };
-
-        total_capacity_bytes += total;
-        total_available_bytes += available;
-        total_used_bytes += used;
-
-        disks.push(DiskInfo {
-            name: disk.name().to_string_lossy().to_string(),
-            mount_point: disk.mount_point().to_string_lossy().to_string(),
-            file_system: disk.file_system().to_string_lossy().to_string(),
-            total_bytes: total,
-            available_bytes: available,
-            used_bytes: used,
-            usage_percent,
-            is_removable: disk.is_removable(),
-        });
-    }
-
-    let usage_percent = if total_capacity_bytes > 0 {
-        (total_used_bytes as f64 / total_capacity_bytes as f64) * 100.0
+        (
+            total,
+            available,
+            used,
+            disk.mount_point().to_string_lossy().to_string(),
+            disk.file_system().to_string_lossy().to_string(),
+        )
     } else {
-        0.0
+        (0, 0, 0, "/".to_string(), "APFS".to_string())
     };
 
-    let is_ssd = Platform::is_ssd();
+    // Calculate Storage Breakdown
+    // 1. Caches (actual scan - usually fast)
+    let mut caches_size = 0;
+    for dir in Platform::cache_directories() {
+        let (s, _) = get_dir_size(dir);
+        caches_size += s;
+    }
+    
+    // 2. Applications (let's scan /Applications on macOS to get actual size, or estimate)
+    let mut apps_size = 0;
+    #[cfg(target_os = "macos")]
+    {
+        let apps_dir = Path::new("/Applications");
+        if apps_dir.exists() {
+            // Fast shallow scan
+            for entry in WalkDir::new(apps_dir)
+                .max_depth(2)
+                .follow_links(false)
+                .into_iter()
+                .filter_map(|e| e.ok())
+            {
+                if let Ok(meta) = entry.metadata() {
+                    if meta.is_file() {
+                        apps_size += meta.len();
+                    }
+                }
+            }
+        }
+    }
+    if apps_size == 0 {
+        apps_size = (used_bytes as f64 * 0.15) as u64; // 15% fallback estimate
+    }
+
+    // 3. System Files (estimate: 25% of used space)
+    let system_size = (used_bytes as f64 * 0.25) as u64;
+
+    // 4. User Documents (estimate: 20% of used space)
+    let docs_size = (used_bytes as f64 * 0.20) as u64;
+
+    // 5. Media (estimate: 25% of used space)
+    let media_size = (used_bytes as f64 * 0.25) as u64;
+
+    // 6. Other (remaining used bytes)
+    let sum_known = caches_size + apps_size + system_size + docs_size + media_size;
+    let other_size = used_bytes.saturating_sub(sum_known);
+
+    let breakdown = StorageBreakdown {
+        system: system_size,
+        applications: apps_size,
+        documents: docs_size,
+        media: media_size,
+        caches: caches_size,
+        other: other_size,
+    };
 
     StorageInfo {
-        disks,
-        total_capacity_bytes,
-        total_available_bytes,
-        total_used_bytes,
-        usage_percent,
-        is_ssd,
+        total_bytes,
+        used_bytes,
+        available_bytes,
+        mount_point,
+        file_system,
+        breakdown,
     }
 }
 
@@ -62,7 +99,6 @@ pub fn get_dir_size<P: AsRef<Path>>(path: P) -> (u64, usize) {
     let mut size = 0;
     let mut count = 0;
     
-    // Validate path to avoid entering system-critical or endless symlink loops
     let path_ref = path.as_ref();
     if !path_ref.exists() {
         return (0, 0);
@@ -84,11 +120,11 @@ pub fn get_dir_size<P: AsRef<Path>>(path: P) -> (u64, usize) {
     (size, count)
 }
 
-/// Scan caches, logs, temp folders, dev junk
+/// Scan caches, logs, temp folders, dev junk for scan commands
 pub fn get_cache_report() -> Vec<CacheEntry> {
     let mut entries = Vec::new();
 
-    // 1. User/System Caches
+    // Caches
     let mut cache_size = 0;
     let mut cache_count = 0;
     for dir in Platform::cache_directories() {
@@ -98,13 +134,13 @@ pub fn get_cache_report() -> Vec<CacheEntry> {
     }
     entries.push(CacheEntry {
         name: "Application Caches".to_string(),
-        category: "Caches".to_string(),
+        category: "UserCache".to_string(),
         bytes: cache_size,
         display_size: ByteSize(cache_size).to_string(),
         count: cache_count,
     });
 
-    // 2. Logs
+    // Logs
     let mut logs_size = 0;
     let mut logs_count = 0;
     for dir in Platform::log_directories() {
@@ -120,7 +156,7 @@ pub fn get_cache_report() -> Vec<CacheEntry> {
         count: logs_count,
     });
 
-    // 3. Temp Files
+    // Temp Files
     let mut temp_size = 0;
     let mut temp_count = 0;
     for dir in Platform::temp_directories() {
@@ -130,13 +166,13 @@ pub fn get_cache_report() -> Vec<CacheEntry> {
     }
     entries.push(CacheEntry {
         name: "Temporary Files".to_string(),
-        category: "Temp".to_string(),
+        category: "TempFiles".to_string(),
         bytes: temp_size,
         display_size: ByteSize(temp_size).to_string(),
         count: temp_count,
     });
 
-    // 4. Browser Caches
+    // Browser Caches
     let mut browser_size = 0;
     let mut browser_count = 0;
     for dir in Platform::browser_cache_directories() {
@@ -146,13 +182,13 @@ pub fn get_cache_report() -> Vec<CacheEntry> {
     }
     entries.push(CacheEntry {
         name: "Browser Caches".to_string(),
-        category: "BrowserCaches".to_string(),
+        category: "BrowserCache".to_string(),
         bytes: browser_size,
         display_size: ByteSize(browser_size).to_string(),
         count: browser_count,
     });
 
-    // 5. Trash / Recycle Bin
+    // Trash / Recycle Bin
     let mut trash_size = 0;
     let mut trash_count = 0;
     let trash_paths = get_trash_paths();

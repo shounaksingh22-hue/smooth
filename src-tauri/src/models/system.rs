@@ -1,4 +1,3 @@
-use bytesize::ByteSize;
 use serde::{Deserialize, Serialize};
 
 /// Top-level system report combining all analysis results.
@@ -9,46 +8,43 @@ pub struct SystemReport {
     pub memory: MemoryInfo,
     pub cpu: CpuInfo,
     pub startup_items: Vec<StartupItem>,
+    pub os: OsInfo,
     pub generated_at: String,
 }
 
 /// Hardware information about the machine.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct HardwareInfo {
-    pub hostname: String,
-    pub os_name: String,
-    pub os_version: String,
-    pub kernel_version: String,
-    pub model: String,
     pub cpu_brand: String,
-    pub cpu_arch: String,
-    pub physical_cores: usize,
-    pub logical_cores: usize,
+    pub cpu_cores: usize,
+    pub cpu_threads: usize,
+    pub cpu_frequency_mhz: u64,
+    pub gpu_name: String,
     pub total_memory_bytes: u64,
-    pub total_memory_display: String,
+    pub disk_type: String, // "SSD" | "HDD" | "NVMe" | "Unknown"
+    pub machine_model: String,
+    pub architecture: String,
 }
 
 /// Disk / storage information.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct StorageInfo {
-    pub disks: Vec<DiskInfo>,
-    pub total_capacity_bytes: u64,
-    pub total_available_bytes: u64,
-    pub total_used_bytes: u64,
-    pub usage_percent: f64,
-    pub is_ssd: bool,
+    pub total_bytes: u64,
+    pub used_bytes: u64,
+    pub available_bytes: u64,
+    pub mount_point: String,
+    pub file_system: String,
+    pub breakdown: StorageBreakdown,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct DiskInfo {
-    pub name: String,
-    pub mount_point: String,
-    pub file_system: String,
-    pub total_bytes: u64,
-    pub available_bytes: u64,
-    pub used_bytes: u64,
-    pub usage_percent: f64,
-    pub is_removable: bool,
+pub struct StorageBreakdown {
+    pub system: u64,
+    pub applications: u64,
+    pub documents: u64,
+    pub media: u64,
+    pub caches: u64,
+    pub other: u64,
 }
 
 /// Live memory usage information.
@@ -56,22 +52,21 @@ pub struct DiskInfo {
 pub struct MemoryInfo {
     pub total_bytes: u64,
     pub used_bytes: u64,
-    pub free_bytes: u64,
     pub available_bytes: u64,
     pub swap_total_bytes: u64,
     pub swap_used_bytes: u64,
-    pub usage_percent: f64,
-    pub swap_usage_percent: f64,
-    pub pressure_level: String,
+    pub memory_pressure: String, // "Normal" | "Warning" | "Critical"
+    pub top_consumers: Vec<ProcessInfo>,
 }
 
 /// CPU usage snapshot.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct CpuInfo {
-    pub global_usage_percent: f32,
+    pub overall_usage_percent: f64,
     pub per_core_usage: Vec<f32>,
     pub top_processes: Vec<ProcessInfo>,
-    pub load_average: LoadAverage,
+    pub temperature_celsius: Option<f64>,
+    pub uptime_seconds: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -79,14 +74,8 @@ pub struct ProcessInfo {
     pub pid: u32,
     pub name: String,
     pub cpu_percent: f32,
-    pub memory_percent: f32,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct LoadAverage {
-    pub one_min: f64,
-    pub five_min: f64,
-    pub fifteen_min: f64,
+    pub memory_bytes: u64,
+    pub status: String, // "Running" | "Sleeping" | "Idle" | "Zombie"
 }
 
 /// A startup / login item.
@@ -95,7 +84,17 @@ pub struct StartupItem {
     pub name: String,
     pub path: String,
     pub enabled: bool,
-    pub source: String,
+    pub impact: String, // "High" | "Medium" | "Low"
+    pub category: String, // "LoginItem" | "LaunchAgent" | "LaunchDaemon" | "ScheduledTask"
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct OsInfo {
+    pub name: String,
+    pub version: String,
+    pub build: String,
+    pub hostname: String,
+    pub kernel_version: String,
 }
 
 /// A cache or registry directory entry
@@ -106,15 +105,4 @@ pub struct CacheEntry {
     pub bytes: u64,
     pub display_size: String,
     pub count: usize,
-}
-
-impl StorageInfo {
-    /// Human-readable display helpers.
-    pub fn total_capacity_display(&self) -> String {
-        ByteSize(self.total_capacity_bytes).to_string()
-    }
-
-    pub fn total_available_display(&self) -> String {
-        ByteSize(self.total_available_bytes).to_string()
-    }
 }

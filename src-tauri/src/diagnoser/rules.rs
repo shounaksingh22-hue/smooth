@@ -5,7 +5,7 @@ pub fn run_rules(report: &SystemReport) -> Vec<DiagnosisFinding> {
     let mut findings = Vec::new();
 
     // 1. HDD Check
-    if !report.storage.is_ssd {
+    if report.hardware.disk_type == "HDD" {
         findings.push(DiagnosisFinding {
             id: "hdd_detected".to_string(),
             title: "Mechanical HDD Detected".to_string(),
@@ -18,8 +18,8 @@ pub fn run_rules(report: &SystemReport) -> Vec<DiagnosisFinding> {
     }
 
     // 2. Storage Capacity Check
-    if report.storage.total_capacity_bytes > 0 {
-        let free_percent = (report.storage.total_available_bytes as f64 / report.storage.total_capacity_bytes as f64) * 100.0;
+    if report.storage.total_bytes > 0 {
+        let free_percent = (report.storage.available_bytes as f64 / report.storage.total_bytes as f64) * 100.0;
         if free_percent < 10.0 {
             findings.push(DiagnosisFinding {
                 id: "storage_critical".to_string(),
@@ -44,7 +44,13 @@ pub fn run_rules(report: &SystemReport) -> Vec<DiagnosisFinding> {
     }
 
     // 3. Memory Pressure / Usage Check
-    let mem_press = report.memory.pressure_level.to_lowercase();
+    let mem_press = report.memory.memory_pressure.to_lowercase();
+    let mem_usage_percent = if report.memory.total_bytes > 0 {
+        (report.memory.used_bytes as f64 / report.memory.total_bytes as f64) * 100.0
+    } else {
+        0.0
+    };
+
     if mem_press.contains("critical") {
         findings.push(DiagnosisFinding {
             id: "memory_pressure_critical".to_string(),
@@ -55,11 +61,11 @@ pub fn run_rules(report: &SystemReport) -> Vec<DiagnosisFinding> {
             recommendation: "Close high-memory applications and clear inactive memory.".to_string(),
             auto_fixable: true,
         });
-    } else if mem_press.contains("warning") || report.memory.usage_percent > 85.0 {
+    } else if mem_press.contains("warning") || mem_usage_percent > 85.0 {
         findings.push(DiagnosisFinding {
             id: "memory_pressure_warning".to_string(),
             title: "High Memory Usage".to_string(),
-            description: format!("Your system is using {:.1}% of its physical memory. There is little room left for new applications, which may lead to slower performance.", report.memory.usage_percent),
+            description: format!("Your system is using {:.1}% of its physical memory. There is little room left for new applications, which may lead to slower performance.", mem_usage_percent),
             severity: Severity::Warning,
             category: DiagnosisCategory::Memory,
             recommendation: "Review running processes and close background applications that are consuming significant RAM.".to_string(),
@@ -81,11 +87,11 @@ pub fn run_rules(report: &SystemReport) -> Vec<DiagnosisFinding> {
     }
 
     // 5. CPU High Usage Check
-    if report.cpu.global_usage_percent > 80.0 {
+    if report.cpu.overall_usage_percent > 80.0 {
         findings.push(DiagnosisFinding {
             id: "cpu_usage_critical".to_string(),
             title: "CPU Load Critically High".to_string(),
-            description: format!("Overall CPU usage is at {:.1}%. This indicates that the processor is heavily loaded, which will cause lag and heating issues.", report.cpu.global_usage_percent),
+            description: format!("Overall CPU usage is at {:.1}%. This indicates that the processor is heavily loaded, which will cause lag and heating issues.", report.cpu.overall_usage_percent),
             severity: Severity::Critical,
             category: DiagnosisCategory::Cpu,
             recommendation: "Identify and close the processes consuming the most CPU cycles.".to_string(),
