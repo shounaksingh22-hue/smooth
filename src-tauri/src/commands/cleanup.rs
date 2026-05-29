@@ -22,8 +22,9 @@ pub async fn execute_cleanup(
     req: CleanupRequest,
     logger: State<'_, ActionLogger>,
 ) -> Result<CleanupResult, String> {
+    let logger_clone = logger.inner().clone();
     let result = tokio::task::spawn_blocking(move || {
-        execute_cleanup_batch(req, &logger)
+        execute_cleanup_batch(req, &logger_clone)
     })
     .await
     .map_err(|e| e.to_string())?;

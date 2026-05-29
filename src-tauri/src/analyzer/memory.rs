@@ -5,9 +5,9 @@ use sysinfo::{System, ProcessRefreshKind, RefreshKind};
 pub fn analyze() -> (MemoryInfo, Vec<ProcessInfo>) {
     // We only need to refresh memory and processes to be fast
     let mut sys = System::new_with_specifics(
-        RefreshKind::new()
-            .with_memory(sysinfo::MemoryRefreshKind::new().with_ram().with_swap())
-            .with_processes(ProcessRefreshKind::new().with_memory().with_cpu())
+        RefreshKind::nothing()
+            .with_memory(sysinfo::MemoryRefreshKind::nothing().with_ram().with_swap())
+            .with_processes(ProcessRefreshKind::nothing().with_memory().with_cpu())
     );
     sys.refresh_all();
 

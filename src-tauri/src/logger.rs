@@ -2,10 +2,11 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::PathBuf;
 use chrono::Local;
-use std::sync::Mutex;
+use std::sync::{Mutex, Arc};
 
+#[derive(Clone)]
 pub struct ActionLogger {
-    log_file_path: Mutex<PathBuf>,
+    log_file_path: Arc<Mutex<PathBuf>>,
 }
 
 impl ActionLogger {
@@ -16,7 +17,7 @@ impl ActionLogger {
         }
         let log_file_path = app_local_data_dir.join("action_log.txt");
         Self {
-            log_file_path: Mutex::new(log_file_path),
+            log_file_path: Arc::new(Mutex::new(log_file_path)),
         }
     }
 

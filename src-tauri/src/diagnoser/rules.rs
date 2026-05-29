@@ -37,7 +37,7 @@ pub fn run_rules(report: &SystemReport) -> Vec<DiagnosisFinding> {
                 description: format!("Your system drive has {:.1}% free space remaining. Performance may begin to degrade if free space drops below 10%.", free_percent),
                 severity: Severity::Warning,
                 category: DiagnosisCategory::Storage,
-                recommendation: "Consider cleaning up temporary caches and emptying your Recycle Bin/Trash.",
+                recommendation: "Consider cleaning up temporary caches and emptying your Recycle Bin/Trash.".to_string(),
                 auto_fixable: true,
             });
         }
@@ -52,7 +52,7 @@ pub fn run_rules(report: &SystemReport) -> Vec<DiagnosisFinding> {
             description: "Your operating system is struggling to allocate RAM for running apps. This causes frequent disk swapping and severe application lag.".to_string(),
             severity: Severity::Critical,
             category: DiagnosisCategory::Memory,
-            recommendation: "Close high-memory applications and clear inactive memory.",
+            recommendation: "Close high-memory applications and clear inactive memory.".to_string(),
             auto_fixable: true,
         });
     } else if mem_press.contains("warning") || report.memory.usage_percent > 85.0 {
@@ -62,7 +62,7 @@ pub fn run_rules(report: &SystemReport) -> Vec<DiagnosisFinding> {
             description: format!("Your system is using {:.1}% of its physical memory. There is little room left for new applications, which may lead to slower performance.", report.memory.usage_percent),
             severity: Severity::Warning,
             category: DiagnosisCategory::Memory,
-            recommendation: "Review running processes and close background applications that are consuming significant RAM.",
+            recommendation: "Review running processes and close background applications that are consuming significant RAM.".to_string(),
             auto_fixable: true,
         });
     }
@@ -75,7 +75,7 @@ pub fn run_rules(report: &SystemReport) -> Vec<DiagnosisFinding> {
             description: format!("Your system is using {:.2} GB of virtual swap memory on your disk. Frequent reading/writing of swap memory can slow down systems and wear down SSDs.", report.memory.swap_used_bytes as f64 / 1_000_000_000.0),
             severity: Severity::Warning,
             category: DiagnosisCategory::Memory,
-            recommendation: "Free up physical memory to reduce swap utilization.",
+            recommendation: "Free up physical memory to reduce swap utilization.".to_string(),
             auto_fixable: true,
         });
     }
@@ -88,7 +88,7 @@ pub fn run_rules(report: &SystemReport) -> Vec<DiagnosisFinding> {
             description: format!("Overall CPU usage is at {:.1}%. This indicates that the processor is heavily loaded, which will cause lag and heating issues.", report.cpu.global_usage_percent),
             severity: Severity::Critical,
             category: DiagnosisCategory::Cpu,
-            recommendation: "Identify and close the processes consuming the most CPU cycles.",
+            recommendation: "Identify and close the processes consuming the most CPU cycles.".to_string(),
             auto_fixable: false,
         });
     }
@@ -102,7 +102,7 @@ pub fn run_rules(report: &SystemReport) -> Vec<DiagnosisFinding> {
             description: format!("There are {} background agents or login items configured to start when your system boots. This significantly slows down system startup and wastes background CPU/RAM.", startup_count),
             severity: Severity::Warning,
             category: DiagnosisCategory::Startup,
-            recommendation: "Disable unnecessary launch agents and login items to speed up boot times.",
+            recommendation: "Disable unnecessary launch agents and login items to speed up boot times.".to_string(),
             auto_fixable: true,
         });
     }

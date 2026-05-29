@@ -3,9 +3,9 @@ use sysinfo::{System, ProcessRefreshKind, RefreshKind};
 
 pub fn analyze() -> CpuInfo {
     let mut sys = System::new_with_specifics(
-        RefreshKind::new()
-            .with_cpu(sysinfo::CpuRefreshKind::new().with_cpu_usage())
-            .with_processes(ProcessRefreshKind::new().with_cpu().with_memory())
+        RefreshKind::nothing()
+            .with_cpu(sysinfo::CpuRefreshKind::nothing().with_cpu_usage())
+            .with_processes(ProcessRefreshKind::nothing().with_cpu().with_memory())
     );
     
     // We need to sleep briefly or measure twice to get accurate CPU usage from sysinfo.
