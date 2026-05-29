@@ -1,0 +1,9 @@
+{
+  "identifier": "default",
+  "description": "Default capability granting core permissions for Smooth",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:default"
+  ]
+}

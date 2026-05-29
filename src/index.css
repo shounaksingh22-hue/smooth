@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* DEFAULT (DARK SCI-FI) */
+    --background: #020617;
+    --foreground: #f8fafc;
+    --primary: #10b981;
+    --primary-hover: #059669;
+    --card: rgba(15, 23, 42, 0.65);
+    --border: rgba(16, 185, 129, 0.15);
+    --ring: rgba(16, 185, 129, 0.4);
+    --glow: 0 0 12px rgba(16, 185, 129, 0.35);
+    --text-glow: 0 0 6px rgba(16, 185, 129, 0.5);
+    
+    /* OS specific style vars */
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, -apple-system, sans-serif;
+    --radius-ui: 12px;
+    --scrollbar-width: 6px;
+    --glass-blur: 16px;
+  }
+
+  html.light {
+    /* LIGHT SCI-FI (HOLOGRAM WHITE) */
+    --background: #f1f5f9;
+    --foreground: #0f172a;
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --card: rgba(255, 255, 255, 0.85);
+    --border: rgba(59, 130, 246, 0.25);
+    --ring: rgba(59, 130, 246, 0.4);
+    --glow: 0 0 12px rgba(59, 130, 246, 0.25);
+    --text-glow: 0 0 4px rgba(59, 130, 246, 0.4);
+  }
+
+  html.platform-windows {
+    --font-sans: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+    --radius-ui: 4px;
+    --glass-blur: 8px;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    user-select: none;
+    overflow: hidden;
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.03) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 40%);
+  }
+  
+  html.light body {
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
+  }
+}
+
+/* Glassmorphism Sci-Fi HUD panels */
+.glass {
+  background: var(--card);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-ui);
+  box-shadow: var(--glow);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-hover:hover {
+  background: var(--card);
+  border-color: var(--primary);
+  box-shadow: 0 0 18px var(--ring);
+  transform: translateY(-1px);
+}
+
+/* Sci-fi HUD text glow */
+.hud-glow {
+  text-shadow: var(--text-glow);
+}
+
+/* Grid overlay background (retro starship console) */
+.hud-grid {
+  background-size: 20px 20px;
+  background-image: linear-gradient(to right, rgba(148, 163, 184, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+  height: var(--scrollbar-width);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Pulsing scan lines */
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.animate-scan {
+  animation: scan 4s linear infinite;
+}
+
+/* Futuristic Loader */
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+@keyframes spin-reverse {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+.animate-spin-reverse {
+  animation: spin-reverse 5s linear infinite;
+}
+
+/* Diagnostic holographic waves */
+@keyframes holographic-wave {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+.animate-hologram {
+  animation: holographic-wave 3s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+}
