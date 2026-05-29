@@ -98,6 +98,16 @@ pub struct StartupItem {
     pub source: String,
 }
 
+/// A cache or registry directory entry
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct CacheEntry {
+    pub name: String,
+    pub category: String,
+    pub bytes: u64,
+    pub display_size: String,
+    pub count: usize,
+}
+
 impl StorageInfo {
     /// Human-readable display helpers.
     pub fn total_capacity_display(&self) -> String {

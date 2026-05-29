@@ -133,8 +133,8 @@ pub fn startup_items() -> Vec<StartupItem> {
         for (hkey, subkey, source) in &registry_paths {
             if let Ok(key) = RegKey::predef(*hkey).open_subkey(subkey) {
                 for value in key.enum_values().flatten() {
-                    let (name, reg_value) = value;
-                    let path = format!("{}", reg_value);
+                    let (name, _) = value;
+                    let path = key.get_value::<String, _>(&name).unwrap_or_default();
                     items.push(StartupItem {
                         name,
                         path,
