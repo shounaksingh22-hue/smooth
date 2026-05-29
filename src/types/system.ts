@@ -9,6 +9,7 @@ export interface SystemInfo {
   cpu: CpuInfo;
   startup_items: StartupItem[];
   os: OsInfo;
+  generated_at: string;
 }
 
 export interface HardwareInfo {
@@ -154,4 +155,5 @@ export const MOCK_SYSTEM_INFO: SystemInfo = {
     hostname: "MacBook-Pro",
     kernel_version: "Darwin 24.2.0",
   },
+  generated_at: "2026-05-29 12:00:00",
 };

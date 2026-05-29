@@ -1,57 +1,41 @@
 use serde::{Deserialize, Serialize};
 
-/// Severity level for a diagnosis finding.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-pub enum Severity {
-    Info,
-    Warning,
-    Critical,
-}
-
-/// A single diagnosis finding.
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct DiagnosisFinding {
+pub struct Suggestion {
     pub id: String,
     pub title: String,
     pub description: String,
-    pub severity: Severity,
-    pub category: DiagnosisCategory,
-    pub recommendation: String,
-    pub auto_fixable: bool,
+    pub category: String, // "storage" | "memory" | "cpu" | "startup" | "system" | "network"
+    pub risk_level: String, // "safe" | "low" | "medium" | "high"
+    pub estimated_gain: String,
+    pub estimated_gain_bytes: Option<u64>,
+    pub details: String,
+    pub dry_run_preview: String,
+    pub enabled: bool,
+    pub impact_score: u8, // 0-100
 }
 
-/// Category of a diagnosis finding.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-pub enum DiagnosisCategory {
-    Storage,
-    Memory,
-    Cpu,
-    Startup,
-    General,
-}
-
-/// Full diagnosis report returned to the frontend.
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct DiagnosisReport {
-    pub findings: Vec<DiagnosisFinding>,
-    pub health_score: u8,
+pub struct DiagnosisResult {
+    pub suggestions: Vec<Suggestion>,
+    pub overall_health_score: u8,
+    pub scan_duration_ms: u64,
     pub summary: String,
-    pub generated_at: String,
 }
 
-impl DiagnosisReport {
-    /// Calculate the health score from findings.
-    pub fn calculate_score(findings: &[DiagnosisFinding]) -> u8 {
-        if findings.is_empty() {
+impl DiagnosisResult {
+    pub fn calculate_score(suggestions: &[Suggestion]) -> u8 {
+        if suggestions.is_empty() {
             return 100;
         }
 
-        let penalty: i32 = findings
+        let penalty: i32 = suggestions
             .iter()
-            .map(|f| match f.severity {
-                Severity::Critical => 25,
-                Severity::Warning => 10,
-                Severity::Info => 3,
+            .map(|s| match s.risk_level.as_str() {
+                "high" => 25,
+                "medium" => 10,
+                "low" => 5,
+                _ => 2,
             })
             .sum();
 
@@ -59,41 +43,28 @@ impl DiagnosisReport {
         score.max(0) as u8
     }
 
-    /// Generate a human-readable summary.
-    pub fn generate_summary(findings: &[DiagnosisFinding], score: u8) -> String {
-        let critical = findings
-            .iter()
-            .filter(|f| f.severity == Severity::Critical)
-            .count();
-        let warnings = findings
-            .iter()
-            .filter(|f| f.severity == Severity::Warning)
-            .count();
-        let info = findings
-            .iter()
-            .filter(|f| f.severity == Severity::Info)
-            .count();
+    pub fn generate_summary(suggestions: &[Suggestion], score: u8) -> String {
+        let high = suggestions.iter().filter(|s| s.risk_level == "high").count();
+        let medium = suggestions.iter().filter(|s| s.risk_level == "medium").count();
+        let total = suggestions.len();
 
-        if critical > 0 {
+        if high > 0 {
             format!(
-                "System health score: {}/100. Found {} critical issue(s), {} warning(s), and {} informational note(s). Immediate action recommended.",
-                score, critical, warnings, info
+                "Found {} high-risk issues out of {} total opportunities. Immediate action recommended.",
+                high, total
             )
-        } else if warnings > 0 {
+        } else if medium > 0 {
             format!(
-                "System health score: {}/100. Found {} warning(s) and {} informational note(s). Some optimizations are available.",
-                score, warnings, info
+                "Found {} medium-risk issues out of {}. Some optimizations are available.",
+                medium, total
             )
-        } else if info > 0 {
+        } else if total > 0 {
             format!(
-                "System health score: {}/100. System is in good shape with {} minor suggestion(s).",
-                score, info
+                "System is in good shape with {} minor suggestions.",
+                total
             )
         } else {
-            format!(
-                "System health score: {}/100. Your system is running optimally!",
-                score
-            )
+            "Your system is running optimally!".to_string()
         }
     }
 }

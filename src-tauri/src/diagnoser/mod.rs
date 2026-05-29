@@ -1,19 +1,19 @@
 pub mod rules;
 
 use crate::models::system::SystemReport;
-use crate::models::diagnosis::DiagnosisReport;
-use chrono::Local;
+use crate::models::diagnosis::DiagnosisResult;
 
-pub fn run_diagnosis(report: &SystemReport) -> DiagnosisReport {
-    let findings = rules::run_rules(report);
-    let health_score = DiagnosisReport::calculate_score(&findings);
-    let summary = DiagnosisReport::generate_summary(&findings, health_score);
-    let generated_at = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+pub fn run_diagnosis(report: &SystemReport) -> DiagnosisResult {
+    let start = std::time::Instant::now();
+    let suggestions = rules::run_rules(report);
+    let overall_health_score = DiagnosisResult::calculate_score(&suggestions);
+    let summary = DiagnosisResult::generate_summary(&suggestions, overall_health_score);
+    let scan_duration_ms = start.elapsed().as_millis() as u64;
 
-    DiagnosisReport {
-        findings,
-        health_score,
+    DiagnosisResult {
+        suggestions,
+        overall_health_score,
+        scan_duration_ms,
         summary,
-        generated_at,
     }
 }
