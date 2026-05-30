@@ -1,5 +1,5 @@
 /* ========================================================================
-   System Types — Represents all data from Rust backend analysis
+   System Types: data returned from the Rust backend analysis
    ======================================================================== */
 
 export interface SystemInfo {

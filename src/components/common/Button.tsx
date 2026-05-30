@@ -11,23 +11,18 @@ export const Button: React.FC<ButtonProps> = ({
   className = "",
   ...props
 }) => {
-  const baseStyle =
-    "px-4 py-2 text-sm font-medium transition-all duration-150 active:scale-95 cursor-pointer outline-none focus:ring-2 focus:ring-emerald-500/50 flex items-center justify-center gap-2";
-  
-  const variants = {
-    primary: "bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold",
-    secondary: "bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700/50",
-    danger: "bg-rose-500 hover:bg-rose-600 text-slate-50 font-bold",
-    ghost: "bg-transparent hover:bg-slate-800/50 text-slate-300",
+  const base =
+    "tactile ring-focus inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-[var(--radius-sm)] cursor-pointer select-none disabled:opacity-40 disabled:pointer-events-none";
+
+  const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
+    primary: "bg-accent text-accent-fg font-semibold shadow-[var(--shadow-sm)] hover:brightness-110",
+    secondary: "bg-elevated text-fg border border-border hover:border-border-strong",
+    danger: "bg-danger text-white font-semibold hover:brightness-110",
+    ghost: "bg-transparent text-muted hover:text-fg hover:bg-elevated",
   };
 
-  const adaptiveClass = "rounded-[var(--radius-ui)]";
-
   return (
-    <button
-      className={`${baseStyle} ${variants[variant]} ${adaptiveClass} ${className}`}
-      {...props}
-    >
+    <button className={`${base} ${variants[variant]} ${className}`} {...props}>
       {children}
     </button>
   );

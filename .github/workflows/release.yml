@@ -54,25 +54,25 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v__VERSION__
-          releaseName: 'Smooth v__VERSION__'
+          releaseName: 'SSmooth v__VERSION__'
           releaseBody: |
-            ## Smooth v__VERSION__
+            ## SSmooth v__VERSION__
 
             ### Downloads
 
             | Platform | Installer |
             |----------|-----------|
-            | macOS (Apple Silicon) | `Smooth_${{ github.ref_name }}_aarch64.dmg` |
-            | macOS (Intel) | `Smooth_${{ github.ref_name }}_x64.dmg` |
-            | Windows (64-bit) | `Smooth_${{ github.ref_name }}_x64-setup.exe` or `.msi` |
+            | macOS (Apple Silicon) | `SSmooth_${{ github.ref_name }}_aarch64.dmg` |
+            | macOS (Intel) | `SSmooth_${{ github.ref_name }}_x64.dmg` |
+            | Windows (64-bit) | `SSmooth_${{ github.ref_name }}_x64-setup.exe` or `.msi` |
 
             ### Security
 
             **SHA-256 Checksums** are attached to each artifact below.
 
             It's good practice to verify your download:
-            - **macOS:** `shasum -a 256 Smooth_*.dmg`
-            - **Windows:** `Get-FileHash Smooth_*-setup.exe -Algorithm SHA256`
+            - **macOS:** `shasum -a 256 SSmooth_*.dmg`
+            - **Windows:** `Get-FileHash SSmooth_*-setup.exe -Algorithm SHA256`
 
             You can also upload the installer to [VirusTotal](https://www.virustotal.com/) for scanning.
 

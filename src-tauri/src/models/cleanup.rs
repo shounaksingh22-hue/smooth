@@ -66,3 +66,30 @@ pub struct CleanupResult {
     pub errors: Vec<String>,
     pub completed_at: String,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Regression guard for the cleanup-phase crash: the frontend used to send
+    // diagnosis suggestion IDs as `categories`, which serde could not map to
+    // CleanupCategory, rejecting the entire `execute_cleanup` IPC call.
+    #[test]
+    fn deserializes_mapped_category_payload() {
+        let json = r#"{"categories":["SystemCache","UserCache","BrowserCache","Logs","TempFiles","Trash"],"use_trash":true}"#;
+        let req: CleanupRequest =
+            serde_json::from_str(json).expect("mapped CleanupCategory names must deserialize");
+        assert_eq!(req.categories.len(), 6);
+        assert_eq!(req.categories[0], CleanupCategory::SystemCache);
+        assert_eq!(req.categories[3], CleanupCategory::Logs);
+        assert!(req.use_trash);
+    }
+
+    #[test]
+    fn rejects_raw_suggestion_ids() {
+        // The exact payload that used to crash cleanup (suggestion IDs, not categories).
+        let json = r#"{"categories":["storage_critical","log-cleanup"],"use_trash":true}"#;
+        let result: Result<CleanupRequest, _> = serde_json::from_str(json);
+        assert!(result.is_err(), "raw suggestion IDs must be rejected at the IPC boundary");
+    }
+}

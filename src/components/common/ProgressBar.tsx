@@ -1,26 +1,36 @@
 import React from "react";
 
 interface ProgressBarProps {
-  progress: number; // 0 to 100
-  color?: string;
+  progress: number; // 0..100
+  tone?: "accent" | "success" | "warn" | "danger";
+  indeterminate?: boolean;
   className?: string;
 }
 
+const TONE: Record<NonNullable<ProgressBarProps["tone"]>, string> = {
+  accent: "bg-accent",
+  success: "bg-success",
+  warn: "bg-warn",
+  danger: "bg-danger",
+};
+
 export const ProgressBar: React.FC<ProgressBarProps> = ({
   progress,
-  color = "from-emerald-500 to-teal-500",
+  tone = "accent",
+  indeterminate = false,
   className = "",
 }) => {
-  const percentage = Math.min(Math.max(progress, 0), 100);
-  
-  const styleClass = "rounded-[var(--radius-ui)]";
-
+  const pct = Math.min(Math.max(progress, 0), 100);
   return (
-    <div className={`w-full bg-slate-800/80 h-2 overflow-hidden ${styleClass} ${className}`}>
-      <div
-        className={`h-full bg-gradient-to-r ${color} transition-all duration-300 ease-out`}
-        style={{ width: `${percentage}%` }}
-      />
+    <div className={`w-full h-1.5 rounded-full bg-elevated overflow-hidden ${className}`}>
+      {indeterminate ? (
+        <div className={`h-full w-1/3 rounded-full ${TONE[tone]} animate-indeterminate`} />
+      ) : (
+        <div
+          className={`h-full rounded-full ${TONE[tone]} transition-all duration-500 ease-out`}
+          style={{ width: `${pct}%` }}
+        />
+      )}
     </div>
   );
 };

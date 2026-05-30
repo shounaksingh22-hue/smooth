@@ -1,158 +1,249 @@
 @import "tailwindcss";
 
+/*
+  Smooth — design system
+  Apple (clean, neutral, generous whitespace, SF type) × Teenage Engineering
+  (one accent, monospace micro-labels, tactile controls).
+
+  Every color is a semantic token mapped to a CSS variable, so the WHOLE UI
+  flips with the theme. Components must use these tokens (bg-surface, text-fg,
+  text-muted, border-border, bg-accent, ...) — never hardcoded slate/emerald.
+*/
+
+@theme {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-fg: var(--accent-fg);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", "Cascadia Code", ui-monospace,
+    "Roboto Mono", Menlo, Consolas, monospace;
+}
+
 @layer base {
+  /* DARK (default) — warm near-black, hairline borders, one orange accent */
   :root {
-    /* DEFAULT (DARK SCI-FI) */
-    --background: #020617;
-    --foreground: #f8fafc;
-    --primary: #10b981;
-    --primary-hover: #059669;
-    --card: rgba(15, 23, 42, 0.65);
-    --border: rgba(16, 185, 129, 0.15);
-    --ring: rgba(16, 185, 129, 0.4);
-    --glow: 0 0 12px rgba(16, 185, 129, 0.35);
-    --text-glow: 0 0 6px rgba(16, 185, 129, 0.5);
-    
-    /* OS specific style vars */
-    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, -apple-system, sans-serif;
+    --canvas: #0f0f11;
+    --surface: #17171a;
+    --elevated: #202024;
+    --fg: #f4f4f5;
+    --muted: #a1a1aa;
+    --faint: #6f6f78;
+    --border: rgba(255, 255, 255, 0.085);
+    --border-strong: rgba(255, 255, 255, 0.16);
+
+    --accent: #ff5a1f;
+    --accent-soft: rgba(255, 90, 31, 0.12);
+    --accent-fg: #ffffff;
+
+    --success: #3fb950;
+    --success-soft: rgba(63, 185, 80, 0.12);
+    --warn: #d9a40a;
+    --warn-soft: rgba(217, 164, 10, 0.12);
+    --danger: #f0506e;
+    --danger-soft: rgba(240, 80, 110, 0.12);
+
+    --ring: rgba(255, 90, 31, 0.45);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.28);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+
     --radius-ui: 12px;
-    --scrollbar-width: 6px;
-    --glass-blur: 16px;
+    --radius-sm: 8px;
+    --scrollbar-width: 8px;
   }
 
+  /* LIGHT — warm paper white, soft gray surfaces, dark text */
   html.light {
-    /* LIGHT SCI-FI (HOLOGRAM WHITE) */
-    --background: #f1f5f9;
-    --foreground: #0f172a;
-    --primary: #3b82f6;
-    --primary-hover: #2563eb;
-    --card: rgba(255, 255, 255, 0.85);
-    --border: rgba(59, 130, 246, 0.25);
-    --ring: rgba(59, 130, 246, 0.4);
-    --glow: 0 0 12px rgba(59, 130, 246, 0.25);
-    --text-glow: 0 0 4px rgba(59, 130, 246, 0.4);
+    --canvas: #f2f2ef;
+    --surface: #ffffff;
+    --elevated: #ebebe7;
+    --fg: #18181b;
+    --muted: #52525b;
+    --faint: #8a8a93;
+    --border: rgba(0, 0, 0, 0.1);
+    --border-strong: rgba(0, 0, 0, 0.2);
+
+    --accent: #e5510e;
+    --accent-soft: rgba(229, 81, 14, 0.1);
+    --accent-fg: #ffffff;
+
+    --success: #15803d;
+    --success-soft: rgba(21, 128, 61, 0.1);
+    --warn: #b45309;
+    --warn-soft: rgba(180, 83, 9, 0.1);
+    --danger: #dc2626;
+    --danger-soft: rgba(220, 38, 38, 0.1);
+
+    --ring: rgba(229, 81, 14, 0.4);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 20px rgba(0, 0, 0, 0.07);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
   }
 
+  /* Platform tweaks — TE-tight corners on Windows */
   html.platform-windows {
-    --font-sans: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
-    --radius-ui: 4px;
-    --glass-blur: 8px;
+    --radius-ui: 6px;
+    --radius-sm: 4px;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
   }
 
   body {
-    background-color: var(--background);
-    color: var(--foreground);
+    background-color: var(--canvas);
+    color: var(--fg);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     user-select: none;
     overflow: hidden;
-    background-image: 
-      radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.03) 0%, transparent 40%),
-      radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 40%);
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
-  
-  html.light body {
-    background-image: 
-      radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
-      radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-fg);
   }
 }
 
-/* Glassmorphism Sci-Fi HUD panels */
-.glass {
-  background: var(--card);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-ui);
-  box-shadow: var(--glow);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* ---- Tactile surface + control utilities ---- */
+@layer components {
+  /* Card: hairline surface with a whisper of elevation */
+  .card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ui);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-interactive {
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card-interactive:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow);
+  }
+
+  /* TE-style monospace micro-label */
+  .label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.2;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 500;
+  }
+
+  /* Tactile "key" button feel */
+  .tactile {
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease,
+      border-color 0.15s ease, color 0.15s ease;
+  }
+  .tactile:active {
+    transform: translateY(1px) scale(0.99);
+  }
+
+  .divider {
+    height: 1px;
+    background-color: var(--border);
+  }
+
+  /* Focus ring */
+  .ring-focus:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--canvas), 0 0 0 4px var(--ring);
+  }
 }
 
-.glass-hover:hover {
-  background: var(--card);
-  border-color: var(--primary);
-  box-shadow: 0 0 18px var(--ring);
-  transform: translateY(-1px);
+/* ---- Subtle TE dot-matrix texture (used sparingly) ---- */
+.dotgrid {
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 22px 22px;
 }
 
-/* Sci-fi HUD text glow */
-.hud-glow {
-  text-shadow: var(--text-glow);
-}
-
-/* Grid overlay background (retro starship console) */
-.hud-grid {
-  background-size: 20px 20px;
-  background-image: linear-gradient(to right, rgba(148, 163, 184, 0.03) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
-}
-
-/* Custom scrollbars */
+/* ---- Scrollbars ---- */
 ::-webkit-scrollbar {
   width: var(--scrollbar-width);
   height: var(--scrollbar-width);
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--border-strong);
   border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: var(--faint);
+  background-clip: padding-box;
 }
 
-/* Pulsing scan lines */
-@keyframes scan {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(100%);
-  }
-}
-
-.animate-scan {
-  animation: scan 4s linear infinite;
-}
-
-/* Futuristic Loader */
+/* ---- Minimal, restrained motion ---- */
 @keyframes spin-slow {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 .animate-spin-slow {
-  animation: spin-slow 8s linear infinite;
+  animation: spin-slow 1.6s linear infinite;
 }
 
-@keyframes spin-reverse {
-  0% { transform: rotate(360deg); }
-  100% { transform: rotate(0deg); }
-}
-.animate-spin-reverse {
-  animation: spin-reverse 5s linear infinite;
-}
-
-/* Diagnostic holographic waves */
-@keyframes holographic-wave {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.1;
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
   }
   50% {
     opacity: 0.45;
   }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 1.8s ease-in-out infinite;
+}
+
+/* Indeterminate bar sweep */
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
   100% {
-    transform: scale(1.15);
-    opacity: 0;
+    transform: translateX(300%);
   }
 }
-.animate-hologram {
-  animation: holographic-wave 3s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+.animate-indeterminate {
+  animation: indeterminate 1.3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

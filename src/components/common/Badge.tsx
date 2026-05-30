@@ -1,25 +1,16 @@
 import React from "react";
-import { RiskLevel, RISK_META } from "../../types/diagnosis";
+import { RiskLevel } from "../../types/diagnosis";
 
-interface BadgeProps {
-  level: RiskLevel;
-}
+const META: Record<RiskLevel, { label: string; cls: string }> = {
+  safe: { label: "Safe", cls: "text-success bg-success-soft" },
+  low: { label: "Low", cls: "text-success bg-success-soft" },
+  medium: { label: "Medium", cls: "text-warn bg-warn-soft" },
+  high: { label: "High", cls: "text-danger bg-danger-soft" },
+};
 
-export const Badge: React.FC<BadgeProps> = ({ level }) => {
-  const meta = RISK_META[level] || {
-    label: String(level),
-    color: "#94a3b8",
-    bgColor: "rgba(148, 163, 184, 0.1)",
-  };
-
-  const styleClass = "rounded-[var(--radius-ui)]";
-
+export const Badge: React.FC<{ level: RiskLevel }> = ({ level }) => {
+  const meta = META[level] ?? { label: String(level), cls: "text-muted bg-elevated" };
   return (
-    <span
-      className={`px-2 py-0.5 text-xs font-semibold select-none border border-slate-700/30 ${styleClass}`}
-      style={{ color: meta.color, backgroundColor: meta.bgColor }}
-    >
-      {meta.label}
-    </span>
+    <span className={`label px-1.5 py-0.5 rounded ${meta.cls}`}>{meta.label}</span>
   );
 };

@@ -25,28 +25,18 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const styleClass = "rounded-[var(--radius-ui)]";
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal Dialog */}
-      <div className={`relative w-full max-w-md bg-slate-900 border border-slate-800/80 p-6 shadow-2xl z-10 ${styleClass}`}>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="card relative z-10 w-full max-w-md p-6 shadow-[var(--shadow)]">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 cursor-pointer"
+          className="ring-focus absolute top-4 right-4 rounded text-faint hover:text-fg cursor-pointer"
         >
           <X size={18} />
         </button>
-
-        <h3 className="text-lg font-bold text-slate-50 mb-3">{title}</h3>
-        <div className="text-sm text-slate-400 mb-6">{children}</div>
-
+        <h3 className="text-lg font-semibold text-fg mb-2 pr-6">{title}</h3>
+        <div className="text-sm text-muted mb-6 leading-relaxed">{children}</div>
         <div className="flex justify-end gap-3">
           <Button variant="ghost" onClick={onClose}>
             {cancelText}

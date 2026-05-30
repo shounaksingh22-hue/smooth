@@ -1,9 +1,23 @@
 import { useCleanupStore } from "../stores/cleanupStore";
 import { useAppStore } from "../stores/appStore";
+import { useAnalysisStore } from "../stores/analysisStore";
 import { cmdScanCleanup, cmdExecuteCleanup, cmdGetActionLog, cmdDisableStartupItem } from "../lib/commands";
+import type { Category } from "../types/diagnosis";
+
+// Diagnosis suggestion category -> concrete CleanupCategory enum values the Rust
+// executor accepts. Non-file issues (memory/cpu/startup/network) map to none.
+const CATEGORY_TO_CLEANUP: Record<Category, string[]> = {
+  storage: ["SystemCache", "UserCache", "BrowserCache", "Logs", "TempFiles", "Trash"],
+  system: [],
+  memory: [],
+  cpu: [],
+  startup: [],
+  network: [],
+};
 
 export function useCleanup() {
   const { useTrash } = useAppStore();
+  const { diagnosisResult } = useAnalysisStore();
   const {
     selectedActions,
     setCleanupActions,
@@ -26,8 +40,16 @@ export function useCleanup() {
   const runCleanup = async () => {
     setCleaning(true);
     try {
-      // Find the categories that match our selected items
-      const categories = selectedActions;
+      // selectedActions are diagnosis suggestion IDs; resolve them to enum
+      // categories before the IPC call or serde rejects the whole batch.
+      const suggestions = diagnosisResult?.suggestions ?? [];
+      const categories = Array.from(
+        new Set(
+          suggestions
+            .filter((s) => selectedActions.includes(s.id))
+            .flatMap((s) => CATEGORY_TO_CLEANUP[s.category] ?? [])
+        )
+      );
       const res = await cmdExecuteCleanup(categories, useTrash);
       setResults([res]);
       setFreedBytesTotal(res.bytes_freed);

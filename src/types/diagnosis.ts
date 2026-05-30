@@ -1,5 +1,5 @@
 /* ========================================================================
-   Diagnosis Types — Issue detection and suggestions
+   Diagnosis Types: issue detection and suggestions
    ======================================================================== */
 
 export type RiskLevel = "safe" | "low" | "medium" | "high";
@@ -16,12 +16,12 @@ export interface Suggestion {
   details: string;
   dry_run_preview: string;
   enabled: boolean;
-  impact_score: number; // 0–100
+  impact_score: number; // 0 to 100
 }
 
 export interface DiagnosisResult {
   suggestions: Suggestion[];
-  overall_health_score: number; // 0–100
+  overall_health_score: number; // 0 to 100
   scan_duration_ms: number;
   summary: string;
 }

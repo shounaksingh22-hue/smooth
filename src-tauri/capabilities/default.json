@@ -1,6 +1,6 @@
 {
   "identifier": "default",
-  "description": "Default capability granting core permissions for Smooth",
+  "description": "Default capability granting core permissions for SSmooth",
   "windows": ["main"],
   "permissions": [
     "core:default",

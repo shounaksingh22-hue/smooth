@@ -16,7 +16,7 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`glass p-5 ${hoverable ? "glass-hover cursor-pointer transition-all duration-200" : ""} ${className}`}
+      className={`card ${hoverable ? "card-interactive cursor-pointer" : ""} ${className}`}
     >
       {children}
     </div>
