@@ -2,9 +2,9 @@
 
 All notable changes to SSmooth are documented here.
 
-## v1.0.0
+## v1.0.1
 
-First public release.
+First working public release. Supersedes the initial v1.0.0 tag, which pointed at an early build that did not load.
 
 ### Added
 - Read only system analysis: hardware, storage breakdown, memory pressure, top processes, and startup items.
